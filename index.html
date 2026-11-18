@@ -1,0 +1,899 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KOJIPAY">
+<meta name="theme-color" content="#ffffff">
+<title>KOJIPAY</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff; --soft:#f7f8fa; --line:#eceef1; --text:#111827; --sub:#6b7280; --mute:#9ca3af;
+  --debt:#2563eb; --debt-bg:#eff4ff;
+  --loan:#ea580c; --loan-bg:#fff4ec;
+  --card:#7c3aed; --card-bg:#f4efff;
+  --ok:#10b981; --ok-bg:#ecfdf5; --red:#ef4444;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{padding-bottom:calc(40px + env(safe-area-inset-bottom))}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+.wrap{max-width:760px;margin:0 auto;padding:0 18px}
+.num{font-variant-numeric:tabular-nums}
+
+/* header */
+header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+header .wrap{display:flex;align-items:center;height:56px;gap:10px}
+.logo{font-weight:800;font-size:18px;letter-spacing:-.3px}
+.logo small{font-weight:500;font-size:12px;color:var(--sub);margin-left:6px}
+.sp{flex:1}
+.sync{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--sub)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mute)}
+.dot.ok{background:var(--ok)} .dot.syncing{background:#f59e0b} .dot.err{background:var(--red)}
+.me{font-size:13px;font-weight:700;padding:6px 11px;border-radius:99px;background:var(--soft)}
+.icon-btn{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:17px;color:var(--sub)}
+.icon-btn:hover{background:var(--soft)}
+
+/* summary */
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0 6px}
+.sum{border:1px solid var(--line);border-radius:14px;padding:13px 14px}
+.sum p{font-size:12px;color:var(--sub);margin-bottom:5px}
+.sum b{font-size:17px;font-weight:800;letter-spacing:-.3px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sum.main{background:var(--text);border-color:var(--text)} .sum.main p{color:#cbd5e1} .sum.main b{color:#fff}
+
+section{margin-top:26px}
+.sec-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.sec-head h2{font-size:17px;font-weight:800;letter-spacing:-.3px}
+.add-btn{background:var(--text);color:#fff;font-weight:700;font-size:13px;padding:8px 14px;border-radius:10px}
+
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;font-size:13px;font-weight:500;padding:6px 12px;border-radius:99px;border:1px solid var(--line);color:var(--sub);background:#fff}
+.chip.on{background:var(--text);border-color:var(--text);color:#fff}
+.chip em{font-style:normal;opacity:.6;margin-left:3px}
+
+/* item list */
+.items{display:flex;flex-direction:column;gap:8px}
+.item{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:14px;padding:13px 14px;background:#fff;cursor:pointer;transition:border-color .15s}
+.item:hover{border-color:#d6d9de}
+.item.done{opacity:.55}
+.item.done .title{text-decoration:line-through}
+.chk{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid #d1d5db;display:grid;place-items:center;font-size:14px;color:transparent;font-weight:800}
+.chk.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.prog{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:700;color:var(--sub);position:relative}
+.prog span{position:relative;z-index:1}
+.prog::after{content:'';position:absolute;inset:4px;background:#fff;border-radius:50%}
+.ibody{flex:1;min-width:0}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px}
+.tag{font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;background:var(--soft);color:var(--sub)}
+.tag.debt{background:var(--debt-bg);color:var(--debt)}
+.tag.loan{background:var(--loan-bg);color:var(--loan)}
+.tag.card{background:var(--card-bg);color:var(--card)}
+.tag.new{background:var(--red);color:#fff}
+.tag.ok{background:var(--ok-bg);color:var(--ok)}
+.title{font-size:15px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{font-size:12px;color:var(--sub);margin-top:3px}
+.bar{height:4px;background:var(--soft);border-radius:4px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:4px;background:var(--ok)}
+.iamt{flex:none;text-align:right}
+.iamt b{display:block;font-size:15px;font-weight:800;letter-spacing:-.3px}
+.iamt small{font-size:11px;color:var(--mute)}
+.empty{text-align:center;color:var(--mute);font-size:14px;padding:28px 0;border:1px dashed var(--line);border-radius:14px}
+
+/* calendar */
+.cal-head{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.cal-head h2{font-size:17px;font-weight:800;min-width:118px;text-align:center}
+.nav{width:32px;height:32px;border-radius:9px;border:1px solid var(--line);font-size:15px;color:var(--sub)}
+.today-btn{font-size:12px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);color:var(--sub)}
+.toggle{display:flex;background:var(--soft);border-radius:9px;padding:3px}
+.toggle button{font-size:12px;font-weight:700;padding:5px 10px;border-radius:7px;color:var(--sub)}
+.toggle button.on{background:#fff;color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.cal{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.dow,.grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.dow div{font-size:11px;font-weight:700;color:var(--sub);text-align:center;padding:8px 0;border-bottom:1px solid var(--line);background:var(--soft)}
+.dow div:first-child{color:var(--red)} .dow div:last-child{color:var(--debt)}
+.cell{min-height:84px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:4px 3px;cursor:pointer;overflow:hidden}
+.cell:nth-child(7n){border-right:0}
+.cell.out{background:#fcfcfd;cursor:default}
+.cell.sel{background:#f5f8ff;box-shadow:inset 0 0 0 2px var(--debt)}
+.d{font-size:12px;font-weight:500;width:22px;height:22px;display:grid;place-items:center;border-radius:50%;margin:0 0 3px 1px}
+.cell.sun .d{color:var(--red)} .cell.sat .d{color:var(--debt)}
+.cell.today .d{background:var(--text);color:#fff}
+.ev{font-size:10px;font-weight:500;line-height:1.35;padding:1px 4px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev.debt{background:var(--debt-bg);color:var(--debt)}
+.ev.loan{background:var(--loan-bg);color:var(--loan)}
+.ev.card{background:var(--card-bg);color:var(--card)}
+.ev.paid{background:var(--soft);color:var(--mute);text-decoration:line-through}
+.ev.plan{background:#fff;border:1px dashed var(--loan);color:var(--loan)}
+.ev.tent{border:1px dashed currentColor}
+.more{font-size:10px;color:var(--mute);padding-left:3px}
+
+/* day / month list */
+.list-box{margin-top:12px}
+.list-title{font-size:13px;font-weight:700;color:var(--sub);margin:4px 2px 8px}
+.row{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:6px;cursor:pointer}
+.row .cb{width:4px;align-self:stretch;border-radius:4px}
+.row .cb.debt{background:var(--debt)} .row .cb.loan{background:var(--loan)} .row .cb.card{background:var(--card)}
+.row .rb{flex:1;min-width:0}
+.row .rt{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .rm{font-size:12px;color:var(--sub);margin-top:2px}
+.row .ra{font-size:14px;font-weight:800;white-space:nowrap}
+.row.paid .rt,.row.paid .ra{color:var(--mute);text-decoration:line-through}
+.row .chk{width:26px;height:26px}
+
+/* month total */
+.total{margin-top:16px;border-radius:16px;background:var(--soft);padding:18px}
+.total h3{font-size:14px;font-weight:700;color:var(--sub);margin-bottom:10px}
+.total .big{font-size:26px;font-weight:800;letter-spacing:-.6px}
+.trow{display:flex;justify-content:space-between;font-size:14px;padding:6px 0}
+.trow span{color:var(--sub)}
+.trow b{font-weight:700}
+.tdiv{height:1px;background:#e5e7eb;margin:10px 0}
+.tk{display:flex;align-items:center;gap:6px}
+.tk i{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(17,24,39,.38);z-index:50;display:none;align-items:flex-end;justify-content:center}
+.ov.show{display:flex}
+.sheet{background:#fff;width:100%;max-width:560px;max-height:90vh;overflow:auto;border-radius:20px 20px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom));animation:up .2s ease}
+@media(min-width:700px){.ov{align-items:center}.sheet{border-radius:20px}}
+@keyframes up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.sheet h3{font-size:19px;font-weight:800;letter-spacing:-.3px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.sheet h3 .x{margin-left:auto;font-size:20px;color:var(--mute)}
+.fld{margin-bottom:14px}
+.fld>span{display:block;font-size:13px;font-weight:700;color:var(--sub);margin-bottom:6px}
+.fld input,.fld select,.fld textarea{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px 13px;font-size:15px;background:#fff;outline:none}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--text)}
+.fld textarea{resize:vertical;min-height:64px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:flex;background:var(--soft);border-radius:11px;padding:4px;margin-bottom:14px}
+.seg button{flex:1;font-size:14px;font-weight:700;padding:9px 4px;border-radius:8px;color:var(--sub)}
+.seg button.on{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.hint{font-size:12px;color:var(--sub);margin:-6px 0 14px;line-height:1.5}
+.preview{font-size:13px;background:var(--soft);border-radius:10px;padding:10px 12px;margin-bottom:14px;color:var(--text);line-height:1.6}
+.btn{width:100%;font-weight:700;font-size:15px;padding:14px;border-radius:12px;background:var(--text);color:#fff}
+.btn.ghost{background:var(--soft);color:var(--text)}
+.btn.danger{background:#fff;color:var(--red);border:1px solid #fecaca}
+.btn.ok{background:var(--ok)}
+.btns{display:flex;gap:8px;margin-top:8px}
+.btns .btn{flex:1}
+.kv{display:flex;justify-content:space-between;font-size:14px;padding:8px 0;border-bottom:1px solid var(--line)}
+.kv span{color:var(--sub)}
+.memo{font-size:14px;color:var(--sub);background:var(--soft);border-radius:10px;padding:10px 12px;margin:10px 0;white-space:pre-wrap}
+.inst{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.inst .n{font-size:12px;font-weight:700;color:var(--sub);width:34px}
+.inst .ib{flex:1;font-size:14px}
+.inst .ib small{display:block;font-size:11px;color:var(--sub);margin-top:2px}
+.inst .ia{font-weight:700;font-size:14px}
+.inst.paid .ib,.inst.paid .ia{color:var(--mute);text-decoration:line-through}
+.status-line{font-size:13px;color:var(--sub);text-align:center;margin:10px 0 4px}
+.who{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.who button{border:1px solid var(--line);border-radius:14px;padding:22px 0;font-size:17px;font-weight:800}
+.who button:hover{border-color:var(--text)}
+.small-link{font-size:13px;color:var(--sub);text-decoration:underline;display:inline-block;margin-top:8px}
+.setting-box{border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+.setting-box h4{font-size:14px;font-weight:800;margin-bottom:10px}
+.toast{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--text);color:#fff;font-size:13px;padding:10px 16px;border-radius:99px;z-index:80;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+
+@media(max-width:520px){
+  .wrap{padding:0 14px}
+  .summary{gap:7px}
+  .sum{padding:11px}
+  .sum b{font-size:14px}
+  .cell{min-height:64px;padding:3px 2px}
+  .ev{font-size:9px;padding:1px 3px}
+  .cal-head h2{min-width:96px;font-size:16px}
+  .iamt b{font-size:14px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="logo">KOJIPAY<small>시윤 → 세원</small></div>
+    <div class="sp"></div>
+    <div class="sync" id="sync"><span class="dot" id="syncDot"></span><span id="syncText">로컬</span></div>
+    <button class="me" id="meBtn" data-act="settings"></button>
+    <button class="icon-btn" data-act="settings" title="설정">⚙</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="summary" id="summary"></div>
+
+  <section>
+    <div class="sec-head">
+      <h2>갚을 목록</h2>
+      <div class="sp"></div>
+      <button class="add-btn" data-act="add">+ 항목 추가</button>
+    </div>
+    <div class="chips" id="filters"></div>
+    <div class="items" id="items"></div>
+  </section>
+
+  <section>
+    <div class="cal-head">
+      <button class="nav" data-act="prev">‹</button>
+      <h2 id="calTitle"></h2>
+      <button class="nav" data-act="next">›</button>
+      <button class="today-btn" data-act="thisMonth">오늘</button>
+      <div class="sp"></div>
+      <div class="toggle" id="calToggle">
+        <button data-act="mode" data-v="cal">달력</button>
+        <button data-act="mode" data-v="list">목록</button>
+      </div>
+    </div>
+    <div id="calArea"></div>
+    <div class="list-box" id="listBox"></div>
+    <div class="total" id="total"></div>
+  </section>
+</main>
+
+<div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   KOJIPAY — 시윤 ↔ 세원 미수금 공유 웹앱
+   데이터: localStorage + (선택) GitHub 비공개 저장소 JSON 동기화
+   ========================================================= */
+const USERS = { siyoon: '시윤', sewon: '세원' };
+const KIND = { debt: '갚을 돈', loan: '세원 대출', card: '세원 카드' };
+const LS_DATA = 'mm_data_v1', LS_CFG = 'mm_cfg_v1', LS_SEEN = 'mm_seen_v1';
+const POLL_MS = 60 * 1000;
+
+const $ = s => document.querySelector(s);
+const load = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
+const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+
+let db = load(LS_DATA) || { v: 1, items: {}, pays: {} };
+db.items = db.items || {}; db.pays = db.pays || {};
+let cfg = Object.assign({ user: null, owner: 'KIINTERNATIONAL', repo: 'kojipay-data', branch: 'main', path: 'data.json', token: '' }, load(LS_CFG) || {});
+let seen = new Set(load(LS_SEEN) || []);
+let view = { ym: ymOf(new Date()), filter: 'active', calMode: 'cal', sel: null };
+let modal = null; // {type:'detail'|'entry'|'form'|'settings'|'who', ...}
+
+/* ---------- utils ---------- */
+function pad(n) { return String(n).padStart(2, '0'); }
+function ymOf(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1); }
+function todayStr() { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+function nowIso() { return new Date().toISOString(); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function won(n) { return (Math.round(n) || 0).toLocaleString('ko-KR') + '원'; }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function parseD(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }
+function addMonths(s, k) {
+  const [y, m, d] = s.split('-').map(Number);
+  const t = new Date(y, m - 1 + k, 1);
+  const last = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate();
+  return t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(Math.min(d, last));
+}
+const DOW = ['일', '월', '화', '수', '목', '금', '토'];
+function fmtD(s, withDow = true) {
+  if (!s) return '날짜 미정';
+  const d = parseD(s);
+  return (d.getMonth() + 1) + '월 ' + d.getDate() + '일' + (withDow ? ' (' + DOW[d.getDay()] + ')' : '');
+}
+function fmtFull(s) { if (!s) return '날짜 미정'; const d = parseD(s); return d.getFullYear() + '.' + pad(d.getMonth() + 1) + '.' + pad(d.getDate()) + ' (' + DOW[d.getDay()] + ')'; }
+function numVal(v) { return Number(String(v || '').replace(/[^\d]/g, '')) || 0; }
+function other(u) { return u === 'siyoon' ? 'sewon' : 'siyoon'; }
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 1800); }
+
+/* ---------- domain ---------- */
+function modeLabel(it) {
+  if (it.kind === 'loan') return '매월 인출 · ' + it.months + '회';
+  if (it.kind === 'card') return +it.months === 1 ? '일시불' : it.months + '개월 할부';
+  if (it.mode === 'install') return it.months + '개월 할부';
+  if (it.mode === 'long') return '장기 미수';
+  return '일시불';
+}
+function schedule(it) {
+  const out = [];
+  const push = (i, n, date, amount, tent) => out.push({ key: it.id + ':' + i, itemId: it.id, i, n, date, amount, tent: !!tent });
+  if (it.kind === 'loan') {
+    const n = Math.max(1, +it.months || 1);
+    for (let i = 0; i < n; i++) push(i, n, it.date ? addMonths(it.date, i) : null, +it.monthly || 0);
+    return out;
+  }
+  if (it.kind === 'card' || (it.kind === 'debt' && it.mode === 'install')) {
+    const n = Math.max(1, +it.months || 1), amt = +it.amount || 0;
+    const per = Math.floor(amt / n), first = amt - per * (n - 1);
+    for (let i = 0; i < n; i++) push(i, n, it.date ? addMonths(it.date, i) : null, i === 0 ? first : per);
+    return out;
+  }
+  if (it.kind === 'debt' && it.mode === 'long') {
+    const amt = +it.amount || 0, m = +it.monthly || 0;
+    if (m > 0 && it.date) {
+      const n = Math.ceil(amt / m);
+      for (let i = 0; i < n; i++) push(i, n, addMonths(it.date, i), i === n - 1 ? amt - m * (n - 1) : m, true);
+    } else push(0, 1, it.date || null, amt, true);
+    return out;
+  }
+  push(0, 1, it.date || null, +it.amount || 0);
+  return out;
+}
+function pay(key) { return db.pays[key] || {}; }
+function stats(it) {
+  const es = schedule(it);
+  let total = 0, paid = 0, pc = 0, next = null;
+  es.forEach(e => { total += e.amount; if (pay(e.key).paid) { paid += e.amount; pc++; } else if (!next) next = e; });
+  return { es, total, paid, remain: total - paid, pc, n: es.length, done: es.length > 0 && pc === es.length, next };
+}
+function liveItems() { return Object.values(db.items).filter(it => !it.deleted); }
+function allEntries() {
+  const out = [];
+  liveItems().forEach(it => schedule(it).forEach(e => out.push(Object.assign(e, { item: it, p: pay(e.key) }))));
+  return out;
+}
+function isNew(it) { return it.createdBy && it.createdBy !== cfg.user && !seen.has(it.id); }
+function markSeen(id) { if (!seen.has(id)) { seen.add(id); store(LS_SEEN, [...seen]); } }
+
+/* ---------- mutations ---------- */
+function commit() { store(LS_DATA, db); render(); queuePush(); }
+function setPay(key, patch) {
+  db.pays[key] = Object.assign({}, db.pays[key] || {}, patch, { updatedAt: nowIso() });
+  commit();
+}
+function togglePaid(key) {
+  const p = pay(key);
+  if (p.paid) setPay(key, { paid: false, paidAt: null, by: null, confirmed: false, confirmedBy: null });
+  else { setPay(key, { paid: true, paidAt: todayStr(), by: cfg.user, confirmed: false, confirmedBy: null }); toast('완료 체크했어요'); }
+}
+function saveItem(it) { it.updatedAt = nowIso(); db.items[it.id] = it; commit(); }
+function deleteItem(id) {
+  const it = db.items[id]; if (!it) return;
+  db.items[id] = { id, deleted: true, updatedAt: nowIso() };
+  commit();
+}
+
+/* ---------- render ---------- */
+function render() {
+  $('#meBtn').textContent = cfg.user ? USERS[cfg.user] : '사용자';
+  const ents = allEntries();
+  renderSummary(ents);
+  renderItems();
+  renderCal(ents);
+  renderList(ents);
+  renderTotal(ents);
+  if (modal && (modal.type === 'detail' || modal.type === 'entry')) rerenderModal();
+}
+
+function renderSummary(ents) {
+  const thisYm = ymOf(new Date());
+  let remain = 0, monthRemain = 0, monthTotal = 0;
+  ents.forEach(e => {
+    if (!e.p.paid) remain += e.amount;
+    if (e.date && e.date.slice(0, 7) === thisYm) { monthTotal += e.amount; if (!e.p.paid) monthRemain += e.amount; }
+  });
+  const active = liveItems().filter(it => !stats(it).done).length;
+  $('#summary').innerHTML = `
+    <div class="sum main"><p>남은 총액</p><b class="num">${won(remain)}</b></div>
+    <div class="sum"><p>이번 달 남은 돈</p><b class="num">${won(monthRemain)}</b></div>
+    <div class="sum"><p>진행 중 항목</p><b class="num">${active}개</b></div>`;
+}
+
+function renderItems() {
+  const items = liveItems().map(it => ({ it, s: stats(it) }));
+  const cnt = {
+    active: items.filter(x => !x.s.done).length,
+    debt: items.filter(x => !x.s.done && x.it.kind === 'debt').length,
+    loan: items.filter(x => !x.s.done && x.it.kind === 'loan').length,
+    card: items.filter(x => !x.s.done && x.it.kind === 'card').length,
+    done: items.filter(x => x.s.done).length,
+    all: items.length
+  };
+  const F = [['active', '진행 중'], ['debt', '갚을 돈'], ['loan', '세원 대출'], ['card', '세원 카드'], ['done', '완료'], ['all', '전체']];
+  $('#filters').innerHTML = F.map(([k, l]) => `<button class="chip ${view.filter === k ? 'on' : ''}" data-act="filter" data-v="${k}">${l}<em>${cnt[k]}</em></button>`).join('');
+
+  let list = items.filter(x => {
+    const f = view.filter;
+    if (f === 'all') return true;
+    if (f === 'done') return x.s.done;
+    if (f === 'active') return !x.s.done;
+    return !x.s.done && x.it.kind === f;
+  });
+  list.sort((a, b) => {
+    if (a.s.done !== b.s.done) return a.s.done ? 1 : -1;
+    const ad = a.s.next && a.s.next.date, bd = b.s.next && b.s.next.date;
+    const at = a.s.next && a.s.next.tent, bt = b.s.next && b.s.next.tent;
+    if (at !== bt) return at ? 1 : -1;
+    if (ad && bd) return ad < bd ? -1 : ad > bd ? 1 : 0;
+    if (ad) return -1; if (bd) return 1;
+    return (b.it.createdAt || '').localeCompare(a.it.createdAt || '');
+  });
+
+  if (!list.length) {
+    $('#items').innerHTML = `<div class="empty">${items.length ? '해당하는 항목이 없어요' : '아직 항목이 없어요. <b>+ 항목 추가</b>로 시작하세요'}</div>`;
+    return;
+  }
+  $('#items').innerHTML = list.map(({ it, s }) => {
+    const single = s.n === 1;
+    const pct = s.total ? Math.round(s.paid / s.total * 100) : 0;
+    const color = it.kind === 'debt' ? 'var(--debt)' : it.kind === 'loan' ? 'var(--loan)' : 'var(--card)';
+    const left = single
+      ? `<button class="chk ${s.done ? 'on' : ''}" data-act="quick" data-key="${s.es[0].key}">✓</button>`
+      : `<div class="prog" style="background:conic-gradient(${s.done ? 'var(--ok)' : color} ${pct * 3.6}deg,#eef0f3 0)"><span>${s.pc}/${s.n}</span></div>`;
+    let meta;
+    if (s.done) meta = '모두 완료';
+    else if (s.next) {
+      const lbl = it.kind === 'loan' ? '다음 인출' : s.next.tent ? '상환 시작 예상' : '다음';
+      meta = s.next.date ? `${lbl} ${fmtD(s.next.date)} · ${won(s.next.amount)}` : (it.mode === 'long' ? '상환 시작일 미정' : '날짜 미정');
+      if (s.next.date && s.next.date < todayStr()) meta = `<span style="color:var(--red);font-weight:700">지남</span> · ` + meta;
+    }
+    return `<div class="item ${s.done ? 'done' : ''}" data-act="detail" data-id="${it.id}">
+      ${left}
+      <div class="ibody">
+        <div class="tags"><span class="tag ${it.kind}">${KIND[it.kind]}</span><span class="tag">${modeLabel(it)}</span>${isNew(it) ? '<span class="tag new">NEW</span>' : ''}</div>
+        <div class="title">${esc(it.title)}</div>
+        <div class="meta">${meta || ''}</div>
+        ${single ? '' : `<div class="bar"><i style="width:${pct}%"></i></div>`}
+      </div>
+      <div class="iamt"><b class="num">${won(s.remain)}</b><small class="num">${s.done ? '완료' : '총 ' + won(s.total)}</small></div>
+    </div>`;
+  }).join('');
+}
+
+function renderCal(ents) {
+  const [y, m] = view.ym.split('-').map(Number);
+  $('#calTitle').textContent = `${y}년 ${m}월`;
+  document.querySelectorAll('#calToggle button').forEach(b => b.classList.toggle('on', b.dataset.v === view.calMode));
+  if (view.calMode !== 'cal') { $('#calArea').innerHTML = ''; return; }
+
+  const byDate = {}, plans = {};
+  ents.forEach(e => {
+    if (e.date) (byDate[e.date] = byDate[e.date] || []).push(e);
+    if (e.p.planDate && !e.p.paid) (plans[e.p.planDate] = plans[e.p.planDate] || []).push(e);
+  });
+  const first = new Date(y, m - 1, 1), startDow = first.getDay(), days = new Date(y, m, 0).getDate();
+  const total = Math.ceil((startDow + days) / 7) * 7, today = todayStr();
+  let html = '<div class="cal"><div class="dow">' + DOW.map(d => `<div>${d}</div>`).join('') + '</div><div class="grid">';
+  for (let c = 0; c < total; c++) {
+    const dn = c - startDow + 1;
+    if (dn < 1 || dn > days) { html += '<div class="cell out"></div>'; continue; }
+    const ds = `${y}-${pad(m)}-${pad(dn)}`, dow = c % 7;
+    const list = (byDate[ds] || []).slice().sort((a, b) => (a.p.paid ? 1 : 0) - (b.p.paid ? 1 : 0));
+    const pl = plans[ds] || [];
+    const chips = [
+      ...list.map(e => `<div class="ev ${e.p.paid ? 'paid' : e.item.kind} ${e.tent && !e.p.paid ? 'tent' : ''}">${esc(e.item.title)}</div>`),
+      ...pl.map(e => `<div class="ev plan">↗ ${esc(e.item.title)}</div>`)
+    ];
+    const max = 3;
+    html += `<div class="cell ${dow === 0 ? 'sun' : ''} ${dow === 6 ? 'sat' : ''} ${ds === today ? 'today' : ''} ${view.sel === ds ? 'sel' : ''}" data-act="day" data-v="${ds}">
+      <div class="d">${dn}</div>${chips.slice(0, max).join('')}${chips.length > max ? `<div class="more">+${chips.length - max}</div>` : ''}</div>`;
+  }
+  html += '</div></div>';
+  $('#calArea').innerHTML = html;
+}
+
+function entryRow(e, opts = {}) {
+  const it = e.item, p = e.p;
+  const who = p.paid ? ` · ${USERS[p.by] || ''} 완료${p.confirmed ? ' · ✓ ' + (USERS[p.confirmedBy] || '') + ' 확인' : ''}` : '';
+  let sub;
+  if (opts.plan) sub = `입금 예정 · 원래 ${it.kind === 'loan' ? '인출일' : '날짜'} ${fmtD(e.date, false)}`;
+  else {
+    sub = (e.n > 1 ? `${e.i + 1}/${e.n}회 · ` : '') + (it.kind === 'loan' ? '인출일' : e.tent ? '예상' : KIND[it.kind]);
+    if (p.planDate && !p.paid) sub += ` · ${fmtD(p.planDate, false)} 입금 예정`;
+  }
+  return `<div class="row ${p.paid ? 'paid' : ''}" data-act="entry" data-key="${e.key}">
+    <div class="cb ${it.kind}"></div>
+    <div class="rb"><div class="rt">${esc(it.title)}</div><div class="rm">${opts.showDate ? fmtD(opts.plan ? p.planDate : e.date) + ' · ' : ''}${sub}${who}</div></div>
+    <div class="ra num">${won(e.amount)}</div>
+    <button class="chk ${p.paid ? 'on' : ''}" data-act="quick" data-key="${e.key}">✓</button>
+  </div>`;
+}
+
+function renderList(ents) {
+  const box = $('#listBox');
+  if (view.calMode === 'cal') {
+    if (!view.sel || view.sel.slice(0, 7) !== view.ym) { box.innerHTML = '<div class="list-title" style="text-align:center;font-weight:500">날짜를 누르면 그날 항목이 보여요</div>'; return; }
+    const due = ents.filter(e => e.date === view.sel);
+    const pl = ents.filter(e => e.p.planDate === view.sel && !e.p.paid);
+    box.innerHTML = `<div class="list-title">${fmtD(view.sel)}</div>` +
+      (due.length || pl.length ? due.map(e => entryRow(e)).join('') + pl.map(e => entryRow(e, { plan: true })).join('') : '<div class="empty" style="padding:18px 0">이 날은 항목이 없어요</div>');
+    return;
+  }
+  const list = ents.filter(e => e.date && e.date.slice(0, 7) === view.ym).sort((a, b) => a.date.localeCompare(b.date));
+  box.innerHTML = list.length ? list.map(e => entryRow(e, { showDate: true })).join('') : '<div class="empty">이 달에는 항목이 없어요</div>';
+}
+
+function renderTotal(ents) {
+  const [, m] = view.ym.split('-').map(Number);
+  const list = ents.filter(e => e.date && e.date.slice(0, 7) === view.ym);
+  let total = 0, paid = 0, tent = 0; const byK = { debt: 0, loan: 0, card: 0 };
+  list.forEach(e => { total += e.amount; byK[e.item.kind] += e.amount; if (e.p.paid) paid += e.amount; if (e.tent) tent += e.amount; });
+  $('#total').innerHTML = `
+    <h3>${m}월 총 지급할 금액</h3>
+    <div class="big num">${won(total)}</div>
+    <div class="tdiv"></div>
+    <div class="trow"><span>완료</span><b class="num" style="color:var(--ok)">${won(paid)}</b></div>
+    <div class="trow"><span>남음</span><b class="num">${won(total - paid)}</b></div>
+    <div class="tdiv"></div>
+    <div class="trow"><span class="tk"><i style="background:var(--debt)"></i>갚을 돈</span><b class="num">${won(byK.debt)}</b></div>
+    <div class="trow"><span class="tk"><i style="background:var(--loan)"></i>세원 대출</span><b class="num">${won(byK.loan)}</b></div>
+    <div class="trow"><span class="tk"><i style="background:var(--card)"></i>세원 카드</span><b class="num">${won(byK.card)}</b></div>
+    ${tent ? `<div class="trow"><span>└ 장기미수 예상분 포함</span><b class="num" style="color:var(--sub)">${won(tent)}</b></div>` : ''}`;
+}
+
+/* ---------- modals ---------- */
+function openModal(state) { modal = state; rerenderModal(); $('#ov').classList.add('show'); }
+function closeModal() { modal = null; $('#ov').classList.remove('show'); $('#sheet').innerHTML = ''; }
+function rerenderModal() {
+  if (!modal) return;
+  const s = $('#sheet');
+  if (modal.type === 'detail') s.innerHTML = detailHtml(modal.id);
+  else if (modal.type === 'entry') s.innerHTML = entryHtml(modal.key);
+  else if (modal.type === 'form') { s.innerHTML = formHtml(modal.id); initForm(); }
+  else if (modal.type === 'settings') s.innerHTML = settingsHtml();
+  else if (modal.type === 'who') s.innerHTML = whoHtml();
+  if (!s.innerHTML) closeModal();
+}
+
+function detailHtml(id) {
+  const it = db.items[id]; if (!it || it.deleted) return '';
+  markSeen(id);
+  const s = stats(it);
+  const dateLabel = it.kind === 'loan' ? '인출일' : '날짜';
+  return `
+    <h3><span class="tag ${it.kind}">${KIND[it.kind]}</span><span class="tag">${modeLabel(it)}</span>${s.done ? '<span class="tag ok">완료</span>' : ''}<button class="x" data-act="close">✕</button></h3>
+    <div style="font-size:21px;font-weight:800;letter-spacing:-.4px;margin-bottom:12px">${esc(it.title)}</div>
+    <div class="kv"><span>총액</span><b class="num">${won(s.total)}</b></div>
+    <div class="kv"><span>갚은 금액</span><b class="num" style="color:var(--ok)">${won(s.paid)}</b></div>
+    <div class="kv"><span>남은 금액</span><b class="num">${won(s.remain)}</b></div>
+    ${it.kind === 'debt' && it.mode === 'long' ? `<div class="kv"><span>상환 시작 예상일</span><b>${fmtFull(it.date)}</b></div>` : ''}
+    <div class="kv"><span>등록</span><b style="font-weight:500">${USERS[it.createdBy] || '-'} · ${it.createdAt ? it.createdAt.slice(0, 10) : ''}</b></div>
+    ${it.memo ? `<div class="memo">${esc(it.memo)}</div>` : ''}
+    <div class="list-title" style="margin-top:16px">${s.n > 1 ? '회차별' : '지급'} (${s.pc}/${s.n})</div>
+    ${s.es.map(e => {
+      const p = pay(e.key);
+      return `<div class="inst ${p.paid ? 'paid' : ''}" data-act="entry" data-key="${e.key}">
+        <div class="n">${e.n > 1 ? (e.i + 1) + '회' : ''}</div>
+        <div class="ib">${e.date ? fmtFull(e.date) : '날짜 미정'}${e.tent ? ' · 예상' : ''}
+          <small>${p.paid ? `${USERS[p.by] || ''} 완료 ${p.paidAt || ''}${p.confirmed ? ' · ✓ ' + (USERS[p.confirmedBy] || '') + ' 확인' : ''}` : p.planDate ? `${fmtD(p.planDate)} 입금 예정` : dateLabel === '인출일' ? '인출일' : ''}${p.note ? ' · ' + esc(p.note) : ''}</small></div>
+        <div class="ia num">${won(e.amount)}</div>
+        <button class="chk ${p.paid ? 'on' : ''}" data-act="quick" data-key="${e.key}">✓</button>
+      </div>`;
+    }).join('')}
+    <div class="btns" style="margin-top:18px">
+      <button class="btn ghost" data-act="edit" data-id="${it.id}">수정</button>
+      <button class="btn danger" data-act="delete" data-id="${it.id}">삭제</button>
+    </div>`;
+}
+
+function findEntry(key) {
+  const [id] = key.split(':'); const it = db.items[id];
+  if (!it || it.deleted) return null;
+  const e = schedule(it).find(x => x.key === key);
+  return e ? Object.assign(e, { item: it, p: pay(key) }) : null;
+}
+function entryHtml(key) {
+  const e = findEntry(key); if (!e) return '';
+  const it = e.item, p = e.p;
+  const isLoan = it.kind === 'loan';
+  const canConfirm = p.paid && p.by && p.by !== cfg.user && !p.confirmed;
+  return `
+    <h3><span class="tag ${it.kind}">${KIND[it.kind]}</span>${e.n > 1 ? `<span class="tag">${e.i + 1}/${e.n}회</span>` : ''}${e.tent ? '<span class="tag">예상</span>' : ''}<button class="x" data-act="close">✕</button></h3>
+    <div style="font-size:20px;font-weight:800;letter-spacing:-.4px">${esc(it.title)}</div>
+    <div style="font-size:28px;font-weight:800;letter-spacing:-.6px;margin:6px 0 14px" class="num">${won(e.amount)}</div>
+    <div class="kv"><span>${isLoan ? '세원 계좌 인출일' : e.tent ? '예상일' : '지급일'}</span><b>${fmtFull(e.date)}</b></div>
+    ${p.paid ? `<div class="kv"><span>완료</span><b>${USERS[p.by] || ''} · ${p.paidAt || ''}</b></div>` : ''}
+    ${p.confirmed ? `<div class="kv"><span>확인</span><b style="color:var(--ok)">✓ ${USERS[p.confirmedBy] || ''}</b></div>` : ''}
+    <div style="margin:16px 0">
+      <button class="btn ${p.paid ? 'ghost' : 'ok'}" data-act="togglePaid" data-key="${key}">${p.paid ? '완료 취소' : (isLoan ? '입금 완료 체크' : '지급 완료 체크')}</button>
+      ${canConfirm ? `<button class="btn" style="margin-top:8px" data-act="confirm" data-key="${key}">받았어요 · 확인</button>` : ''}
+    </div>
+    ${p.paid ? '' : `
+    <div class="fld"><span>${isLoan ? '내가 입금할 날 (인출 전)' : '입금 예정일'}</span><input type="date" id="eqPlan" value="${p.planDate || ''}"></div>`}
+    <div class="fld"><span>메모</span><input id="eqNote" value="${esc(p.note || '')}" placeholder="예: 토스로 보냄"></div>
+    <div class="btns">
+      <button class="btn ghost" data-act="detail" data-id="${it.id}">전체 회차 보기</button>
+      <button class="btn" data-act="saveEntry" data-key="${key}">저장</button>
+    </div>`;
+}
+
+function formHtml(id) {
+  const it = id ? db.items[id] : null;
+  return `
+    <h3>${it ? '항목 수정' : '항목 추가'}<button class="x" data-act="close">✕</button></h3>
+    <form id="itemForm" autocomplete="off">
+      <div class="seg" id="segKind">
+        <button type="button" data-v="debt">갚을 돈</button>
+        <button type="button" data-v="loan">세원 대출</button>
+        <button type="button" data-v="card">세원 카드</button>
+      </div>
+      <div class="hint" id="kindHint"></div>
+      <div class="fld"><span>이름</span><input name="title" required></div>
+      <div class="fld g-amount"><span id="lblAmount">총 금액</span><input name="amount" inputmode="numeric" class="money" placeholder="0"></div>
+      <div class="g-mode"><div class="seg" id="segMode">
+        <button type="button" data-v="lump">일시불</button>
+        <button type="button" data-v="install">할부</button>
+        <button type="button" data-v="long">장기 미수</button>
+      </div></div>
+      <div class="fld g-monthly"><span id="lblMonthly">월 금액</span><input name="monthly" inputmode="numeric" class="money" placeholder="0"></div>
+      <div class="fld g-months"><span id="lblMonths">개월 수</span><input name="months" type="number" min="1" max="120" inputmode="numeric"></div>
+      <div class="fld g-cardm"><span>할부</span><select name="cardMonths">
+        <option value="1">일시불</option>${Array.from({ length: 35 }, (_, i) => i + 2).map(n => `<option value="${n}">${n}개월</option>`).join('')}
+      </select></div>
+      <div class="fld"><span id="lblDate">날짜</span><input name="date" type="date"></div>
+      <div class="hint" id="dateHint"></div>
+      <div class="preview" id="preview"></div>
+      <div class="fld"><span>메모 (선택)</span><textarea name="memo"></textarea></div>
+      <button class="btn" type="submit">${it ? '저장' : '추가'}</button>
+    </form>`;
+}
+function initForm() {
+  const f = $('#itemForm'); const it = modal.id ? db.items[modal.id] : null;
+  const st = modal.fs = modal.fs || {
+    kind: it ? it.kind : 'debt',
+    mode: it ? (it.mode || 'lump') : 'lump'
+  };
+  if (it) {
+    f.title.value = it.title || '';
+    f.amount.value = it.amount ? Number(it.amount).toLocaleString('ko-KR') : '';
+    f.monthly.value = it.monthly ? Number(it.monthly).toLocaleString('ko-KR') : '';
+    f.months.value = it.months || '';
+    f.cardMonths.value = String(it.months || 1);
+    f.date.value = it.date || '';
+    f.memo.value = it.memo || '';
+  } else {
+    f.months.value = '';
+    f.date.value = '';
+  }
+  f.querySelectorAll('.money').forEach(inp => inp.addEventListener('input', () => {
+    const n = numVal(inp.value); inp.value = n ? n.toLocaleString('ko-KR') : ''; applyForm();
+  }));
+  f.addEventListener('input', applyForm);
+  f.addEventListener('change', applyForm);
+  $('#segKind').addEventListener('click', ev => { const b = ev.target.closest('button'); if (!b) return; st.kind = b.dataset.v; applyForm(); });
+  $('#segMode').addEventListener('click', ev => { const b = ev.target.closest('button'); if (!b) return; st.mode = b.dataset.v; applyForm(); });
+  f.addEventListener('submit', ev => { ev.preventDefault(); submitForm(); });
+  applyForm();
+}
+function show(sel, on) { document.querySelectorAll('#itemForm ' + sel).forEach(el => el.style.display = on ? '' : 'none'); }
+function readForm() {
+  const f = $('#itemForm'), st = modal.fs;
+  const d = { kind: st.kind, title: f.title.value.trim(), memo: f.memo.value.trim(), date: f.date.value || null };
+  if (st.kind === 'debt') {
+    d.mode = st.mode; d.amount = numVal(f.amount.value);
+    if (st.mode === 'install') d.months = Math.max(1, +f.months.value || 0);
+    if (st.mode === 'long') d.monthly = numVal(f.monthly.value);
+  } else if (st.kind === 'loan') {
+    d.mode = 'install'; d.monthly = numVal(f.monthly.value); d.months = Math.max(1, +f.months.value || 0); d.amount = d.monthly * d.months;
+  } else {
+    d.months = +f.cardMonths.value || 1; d.mode = d.months === 1 ? 'lump' : 'install'; d.amount = numVal(f.amount.value);
+  }
+  return d;
+}
+function applyForm() {
+  const st = modal.fs, k = st.kind, m = st.mode;
+  document.querySelectorAll('#segKind button').forEach(b => b.classList.toggle('on', b.dataset.v === k));
+  document.querySelectorAll('#segMode button').forEach(b => b.classList.toggle('on', b.dataset.v === m));
+  const f = $('#itemForm');
+  f.title.placeholder = k === 'debt' ? '예: 9월 빌린 돈' : k === 'loan' ? '예: 카카오뱅크 대출' : '예: 가민 시계';
+  $('#kindHint').textContent = k === 'debt' ? '내가 세원이에게 갚아야 할 돈' : k === 'loan' ? '세원이 대출 → 매달 세원 계좌에서 인출되는 날짜를 넣어 두면, 그 전에 입금할 날을 체크할 수 있어요' : '세원 카드로 내 물건을 결제한 경우 · 매달 청구되는 할부금이 달력에 표시돼요';
+  show('.g-amount', k !== 'loan');
+  $('#lblAmount').textContent = k === 'card' ? '결제 금액' : '총 금액';
+  show('.g-mode', k === 'debt');
+  show('.g-months', (k === 'debt' && m === 'install') || k === 'loan');
+  $('#lblMonths').textContent = k === 'loan' ? '남은 인출 횟수 (개월)' : '할부 개월 수';
+  show('.g-cardm', k === 'card');
+  show('.g-monthly', k === 'loan' || (k === 'debt' && m === 'long'));
+  $('#lblMonthly').textContent = k === 'loan' ? '월 인출액 (원금+이자)' : '월 상환액 (선택)';
+  $('#lblDate').textContent = k === 'loan' ? '첫 인출일' : k === 'card' ? '첫 청구일' : m === 'lump' ? '지급 예정일' : m === 'install' ? '첫 지급일' : '상환 시작 예상일 (선택)';
+  $('#dateHint').textContent = (k === 'loan' || k === 'card' || (k === 'debt' && m === 'install')) ? '다음 회차부터는 매월 같은 날짜로 잡혀요' : (k === 'debt' && m === 'long') ? '날짜를 비워 두면 "상환일 미정"으로 표시돼요' : '';
+  // preview
+  const d = readForm();
+  const tmp = Object.assign({ id: 'tmp' }, d);
+  const es = schedule(tmp);
+  let pv = '';
+  if (d.amount > 0 || d.monthly > 0) {
+    const tot = es.reduce((a, e) => a + e.amount, 0);
+    if (es.length > 1) {
+      const last = es[es.length - 1];
+      pv = `총 <b>${won(tot)}</b> · ${es.length}회<br>${es[0].amount !== es[1].amount ? `1회차 ${won(es[0].amount)}, 이후 ` : '매월 '}${won(es[1].amount)}${last.amount !== es[1].amount ? ` · 마지막 ${won(last.amount)}` : ''}${d.date ? `<br>${fmtFull(es[0].date)} ~ ${fmtFull(last.date)}` : ''}`;
+    } else pv = `총 <b>${won(tot)}</b>${d.date ? ' · ' + fmtFull(d.date) : ''}`;
+  }
+  const pvEl = $('#preview'); pvEl.innerHTML = pv; pvEl.style.display = pv ? '' : 'none';
+}
+function submitForm() {
+  const d = readForm();
+  if (!d.title) return toast('이름을 입력해 주세요');
+  if (d.kind === 'loan') { if (!d.monthly) return toast('월 인출액을 입력해 주세요'); if (!d.date) return toast('첫 인출일을 선택해 주세요'); }
+  else if (!d.amount) return toast('금액을 입력해 주세요');
+  if (d.kind === 'card' && !d.date) return toast('첫 청구일을 선택해 주세요');
+  if (d.kind === 'debt' && d.mode === 'install' && !d.date) return toast('첫 지급일을 선택해 주세요');
+  const old = modal.id ? db.items[modal.id] : null;
+  const it = Object.assign({}, old ? { id: old.id, createdBy: old.createdBy, createdAt: old.createdAt } : { id: uid(), createdBy: cfg.user, createdAt: nowIso() }, d);
+  if (!old) markSeen(it.id);
+  saveItem(it);
+  toast(old ? '수정했어요' : '추가했어요');
+  openModal({ type: 'detail', id: it.id });
+}
+
+function whoHtml() {
+  return `<h3>누가 쓰고 있나요?</h3>
+    <p style="font-size:14px;color:var(--sub);line-height:1.6">이 기기에서 쓰는 사람을 골라 주세요. 누가 체크했는지 기록에 남아요.</p>
+    <div class="who"><button data-act="setUser" data-v="siyoon">시윤</button><button data-act="setUser" data-v="sewon">세원</button></div>`;
+}
+function settingsHtml() {
+  return `<h3>설정<button class="x" data-act="close">✕</button></h3>
+    <div class="setting-box">
+      <h4>사용자</h4>
+      <div class="seg" style="margin:0">
+        <button type="button" class="${cfg.user === 'siyoon' ? 'on' : ''}" data-act="setUser" data-v="siyoon">시윤</button>
+        <button type="button" class="${cfg.user === 'sewon' ? 'on' : ''}" data-act="setUser" data-v="sewon">세원</button>
+      </div>
+    </div>
+    <div class="setting-box">
+      <h4>GitHub 동기화</h4>
+      <div class="two">
+        <div class="fld"><span>계정</span><input id="cOwner" value="${esc(cfg.owner)}"></div>
+        <div class="fld"><span>데이터 저장소</span><input id="cRepo" value="${esc(cfg.repo)}"></div>
+      </div>
+      <div class="two">
+        <div class="fld"><span>브랜치</span><input id="cBranch" value="${esc(cfg.branch)}"></div>
+        <div class="fld"><span>파일</span><input id="cPath" value="${esc(cfg.path)}"></div>
+      </div>
+      <div class="fld"><span>토큰 (Fine-grained, Contents 읽기/쓰기)</span><input id="cToken" type="password" value="${esc(cfg.token)}" placeholder="github_pat_..."></div>
+      <button class="btn" data-act="saveCfg">저장하고 동기화</button>
+      <div class="status-line" id="cfgStatus">${syncState.msg || ''}</div>
+    </div>
+    <div class="setting-box">
+      <h4>백업</h4>
+      <div class="btns" style="margin:0">
+        <button class="btn ghost" data-act="export">JSON 내보내기</button>
+        <button class="btn ghost" data-act="import">가져오기</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json" style="display:none">
+    </div>`;
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', ev => {
+  const el = ev.target.closest('[data-act]'); if (!el) return;
+  if (el.closest('#ov') && !el.closest('#sheet') && el !== $('#ov')) return;
+  const act = el.dataset.act, v = el.dataset.v;
+  if (act === 'quick') { ev.stopPropagation(); togglePaid(el.dataset.key); return; }
+  switch (act) {
+    case 'add': openModal({ type: 'form', id: null }); break;
+    case 'edit': openModal({ type: 'form', id: el.dataset.id }); break;
+    case 'detail': openModal({ type: 'detail', id: el.dataset.id }); render(); break;
+    case 'entry': openModal({ type: 'entry', key: el.dataset.key }); break;
+    case 'close': closeModal(); break;
+    case 'delete':
+      if (confirm('이 항목을 삭제할까요? 세원이 화면에서도 사라져요.')) { deleteItem(el.dataset.id); closeModal(); toast('삭제했어요'); }
+      break;
+    case 'togglePaid': togglePaid(el.dataset.key); break;
+    case 'confirm': setPay(el.dataset.key, { confirmed: true, confirmedBy: cfg.user }); toast('확인했어요'); break;
+    case 'saveEntry': {
+      const patch = { note: ($('#eqNote') || {}).value || '' };
+      if ($('#eqPlan')) patch.planDate = $('#eqPlan').value || null;
+      setPay(el.dataset.key, patch); toast('저장했어요'); break;
+    }
+    case 'filter': view.filter = v; renderItems(); break;
+    case 'prev': case 'next': {
+      const [y, m] = view.ym.split('-').map(Number);
+      view.ym = ymOf(new Date(y, m - 1 + (act === 'next' ? 1 : -1), 1)); view.sel = null; render(); break;
+    }
+    case 'thisMonth': view.ym = ymOf(new Date()); view.sel = todayStr(); render(); break;
+    case 'mode': view.calMode = v; render(); break;
+    case 'day': view.sel = view.sel === v ? null : v; render(); break;
+    case 'settings': openModal({ type: 'settings' }); break;
+    case 'setUser': cfg.user = v; store(LS_CFG, cfg); render(); if (modal && modal.type === 'who') closeModal(); else rerenderModal(); break;
+    case 'saveCfg':
+      cfg.owner = $('#cOwner').value.trim(); cfg.repo = $('#cRepo').value.trim();
+      cfg.branch = $('#cBranch').value.trim() || 'main'; cfg.path = $('#cPath').value.trim() || 'data.json';
+      cfg.token = $('#cToken').value.trim(); store(LS_CFG, cfg);
+      syncNow(); break;
+    case 'export': {
+      const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'kojipay-' + todayStr() + '.json'; a.click();
+      break;
+    }
+    case 'import': {
+      const inp = $('#importFile');
+      inp.onchange = async () => {
+        const file = inp.files[0]; if (!file) return;
+        try { const data = JSON.parse(await file.text()); db = merge(db, data); commit(); toast('가져왔어요'); }
+        catch (e) { toast('파일을 읽을 수 없어요'); }
+      };
+      inp.click(); break;
+    }
+  }
+});
+$('#ov').addEventListener('click', ev => { if (ev.target.id === 'ov' && modal && modal.type !== 'who') closeModal(); });
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && modal && modal.type !== 'who') closeModal(); });
+
+/* ---------- GitHub sync ---------- */
+const syncState = { busy: false, again: false, msg: '', timer: null };
+function setStatus(kind, msg) {
+  $('#syncDot').className = 'dot ' + (kind === 'local' ? '' : kind);
+  $('#syncText').textContent = kind === 'ok' ? '동기화됨' : kind === 'syncing' ? '동기화 중' : kind === 'err' ? '오류' : '로컬';
+  syncState.msg = kind === 'ok' ? '마지막 동기화 ' + new Date().toLocaleTimeString('ko-KR') : kind === 'err' ? '오류: ' + (msg || '') : kind === 'local' ? '토큰이 없으면 이 기기에만 저장돼요' : '동기화 중…';
+  const cs = $('#cfgStatus'); if (cs) cs.textContent = syncState.msg;
+}
+function apiUrl() {
+  return `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/` + cfg.path.split('/').map(encodeURIComponent).join('/');
+}
+function hdr() { return { Authorization: 'Bearer ' + cfg.token, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }; }
+function b64enc(str) {
+  const bytes = new TextEncoder().encode(str); let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+function b64dec(b64) {
+  const bin = atob(b64.replace(/\s/g, '')); const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+async function ghGet() {
+  const r = await fetch(apiUrl() + '?ref=' + encodeURIComponent(cfg.branch) + '&t=' + Date.now(), { headers: hdr(), cache: 'no-store' });
+  if (r.status === 404) return { data: null, sha: null };
+  if (!r.ok) throw new Error(r.status === 401 ? '토큰이 맞지 않아요 (401)' : r.status === 403 ? '권한이 없어요 (403)' : 'GET ' + r.status);
+  const j = await r.json();
+  return { data: JSON.parse(b64dec(j.content)), sha: j.sha };
+}
+async function ghPut(data, sha) {
+  const body = { message: `update by ${USERS[cfg.user] || '?'} · ${new Date().toLocaleString('ko-KR')}`, content: b64enc(JSON.stringify(data, null, 1)), branch: cfg.branch };
+  if (sha) body.sha = sha;
+  const r = await fetch(apiUrl(), { method: 'PUT', headers: Object.assign(hdr(), { 'Content-Type': 'application/json' }), body: JSON.stringify(body) });
+  if (!r.ok) { const e = new Error('PUT ' + r.status); e.status = r.status; throw e; }
+}
+function merge(a, b) {
+  const out = { v: 1, items: {}, pays: {} };
+  ['items', 'pays'].forEach(k => {
+    const A = (a && a[k]) || {}, B = (b && b[k]) || {};
+    new Set([...Object.keys(A), ...Object.keys(B)]).forEach(id => {
+      const x = A[id], y = B[id];
+      out[k][id] = !x ? y : !y ? x : ((y.updatedAt || '') > (x.updatedAt || '') ? y : x);
+    });
+  });
+  return out;
+}
+function canon(o) {
+  if (Array.isArray(o)) return '[' + o.map(canon).join(',') + ']';
+  if (o && typeof o === 'object') return '{' + Object.keys(o).sort().map(k => JSON.stringify(k) + ':' + canon(o[k])).join(',') + '}';
+  return JSON.stringify(o);
+}
+async function syncNow() {
+  if (!cfg.token) { setStatus('local'); return; }
+  if (syncState.busy) { syncState.again = true; return; }
+  syncState.busy = true; setStatus('syncing');
+  try {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const { data, sha } = await ghGet();
+      const merged = data ? merge(data, db) : db;
+      const changedLocal = canon(merged) !== canon(db);
+      db = merged; store(LS_DATA, db);
+      if (changedLocal) render();
+      if (!data || canon(merged) !== canon(data)) {
+        try { await ghPut(merged, sha); }
+        catch (e) { if (e.status === 409 || e.status === 422) continue; throw e; }
+      }
+      break;
+    }
+    setStatus('ok');
+  } catch (e) { console.error(e); setStatus('err', e.message); }
+  finally {
+    syncState.busy = false;
+    if (syncState.again) { syncState.again = false; syncNow(); }
+  }
+}
+function queuePush() { clearTimeout(syncState.timer); syncState.timer = setTimeout(syncNow, 700); }
+setInterval(() => { if (document.visibilityState === 'visible') syncNow(); }, POLL_MS);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncNow(); });
+
+/* ---------- start ---------- */
+render();
+setStatus(cfg.token ? 'syncing' : 'local');
+syncNow();
+if (!cfg.user) openModal({ type: 'who' });
+</script>
+</body>
+</html>
