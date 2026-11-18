@@ -22,7 +22,9 @@
   --ok:#10b981; --ok-bg:#ecfdf5; --red:#ef4444;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+html,body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden}
+input,select,textarea{font-size:16px !important}
+input[type=date]{min-height:46px;-webkit-appearance:none;appearance:none;display:block}
 body{padding-bottom:calc(40px + env(safe-area-inset-bottom))}
 button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0}
@@ -150,7 +152,7 @@ section{margin-top:26px}
 .sheet h3 .x{margin-left:auto;font-size:20px;color:var(--mute)}
 .fld{margin-bottom:14px}
 .fld>span{display:block;font-size:13px;font-weight:700;color:var(--sub);margin-bottom:6px}
-.fld input,.fld select,.fld textarea{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px 13px;font-size:15px;background:#fff;outline:none}
+.fld input,.fld select,.fld textarea{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px 13px;font-size:16px;background:#fff;outline:none}
 .fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--text)}
 .fld textarea{resize:vertical;min-height:64px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
