@@ -687,6 +687,7 @@ function applyForm() {
   show('.g-mode', k === 'debt');
   show('.g-months', (k === 'debt' && m === 'install') || k === 'loan');
   $('#lblMonths').textContent = k === 'loan' ? '남은 인출 횟수 (개월)' : '할부 개월 수';
+  f.months.placeholder = k === 'loan' ? '예: 24 (모르면 대략 넣고 나중에 수정)' : '예: 6';
   show('.g-cardm', k === 'card');
   show('.g-monthly', k === 'loan' || (k === 'debt' && m === 'long'));
   $('#lblMonthly').textContent = k === 'loan' ? '월 인출액 (원금+이자)' : '월 상환액 (선택)';
@@ -709,7 +710,9 @@ function applyForm() {
 function submitForm() {
   const d = readForm();
   if (!d.title) return toast('이름을 입력해 주세요');
-  if (d.kind === 'loan') { if (!d.monthly) return toast('월 인출액을 입력해 주세요'); if (!d.date) return toast('첫 인출일을 선택해 주세요'); }
+  const rawMonths = +$('#itemForm').months.value || 0;
+  if (d.kind === 'loan') { if (!d.monthly) return toast('월 인출액을 입력해 주세요'); if (rawMonths < 1) return toast('남은 인출 횟수(개월)를 입력해 주세요'); if (!d.date) return toast('첫 인출일을 선택해 주세요'); }
+  if (d.kind === 'debt' && d.mode === 'install' && rawMonths < 1) return toast('할부 개월 수를 입력해 주세요');
   else if (!d.amount) return toast('금액을 입력해 주세요');
   if (d.kind === 'card' && !d.date) return toast('첫 청구일을 선택해 주세요');
   if (d.kind === 'debt' && d.mode === 'install' && !d.date) return toast('첫 지급일을 선택해 주세요');
